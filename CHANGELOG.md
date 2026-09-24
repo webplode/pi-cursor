@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.4.39] - 2026-09-24
+
+### Fixed
+
+- **Pi's tools are visible to Cursor models again.** Cursor's server-side tool search sends `startGrindPlanningArgs` (exec field 36) to look up an MCP namespace such as `pi`. 1.4.38 answered it with an empty success, which told the server the namespace had no tools, so models could not write files at all. It is now answered with a throw, and the server falls back to the tools the run declared.
+
+### Changed
+
+- Published as `@iznogoudd/pi-cursor`, a fork of `@rahularya01/pi-cursor`.
+
 ## [1.4.38] - 2026-09-23
 
 ### Fixed
