@@ -1,7 +1,12 @@
-# @rahularya01/pi-cursor
+# @iznogoudd/pi-cursor
 
-[![npm version](https://img.shields.io/npm/v/@rahularya01/pi-cursor?logo=npm)](https://www.npmjs.com/package/@rahularya01/pi-cursor)
-[![license](https://img.shields.io/npm/l/@rahularya01/pi-cursor)](LICENSE)
+A fork of [`@rahularya01/pi-cursor`](https://github.com/Rahularya01/pi-cursor) with one fix: Cursor's
+server-side tool search asks the client about the `pi` tool namespace, and upstream 1.4.38 answers that
+with an empty success, so models never see Pi's tools. This fork answers with a throw, so the server
+falls back to the tools the run declared. Switch back to upstream once it ships the fix.
+
+[![npm version](https://img.shields.io/npm/v/@iznogoudd/pi-cursor?logo=npm)](https://www.npmjs.com/package/@iznogoudd/pi-cursor)
+[![license](https://img.shields.io/npm/l/@iznogoudd/pi-cursor)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=github)](https://github.com/sponsors/Rahularya01)
 
 Use your **Cursor** subscription's models — Composer, Claude, GPT, Grok — inside the **Pi Coding Agent**.
@@ -37,7 +42,7 @@ or CLI, it just works — no setup beyond installing the package.
 ## Install
 
 ```bash
-pi install npm:@rahularya01/pi-cursor
+pi install npm:@iznogoudd/pi-cursor
 ```
 
 Then **restart Pi** (or run `/reload`) so the new provider is picked up.
@@ -54,7 +59,7 @@ pi install git:github.com/Rahularya01/pi-cursor
 To update later:
 
 ```bash
-pi update npm:@rahularya01/pi-cursor
+pi update npm:@iznogoudd/pi-cursor
 ```
 
 </details>
@@ -275,7 +280,7 @@ layer. Never hand-edit it — regenerate with `yarn proto:gen` (see
 ## Troubleshooting
 
 - **Pasted screenshot is `permission denied`:** Pi Ctrl+V writes `$TMPDIR/pi-clipboard-<uuid>.png` and inserts that path as text. Clipboard images are still ingested as vision attachments. Native Cursor `read` is rejected and redirected to Pi tools; reading the path through a tool now depends on the active Pi tool's access rules. If the temporary file is gone, paste again. If Pi's read tool cannot access it, reattach the image for vision input or place it in a location that tool can read.
-- **`No API provider registered for api: cursor-native`:** Update to the latest `pi-cursor` (`pi update npm:@rahularya01/pi-cursor`) and restart Pi (or `/reload`). This means the Agent tried to stream via Pi's global `streamSimple` dispatcher before the Cursor transport was registered there. Current builds register `cursor-native` on that registry during extension load.
+- **`No API provider registered for api: cursor-native`:** Update to the latest `pi-cursor` (`pi update npm:@iznogoudd/pi-cursor`) and restart Pi (or `/reload`). This means the Agent tried to stream via Pi's global `streamSimple` dispatcher before the Cursor transport was registered there. Current builds register `cursor-native` on that registry during extension load.
 - **Not logged in / 401:** Ensure Cursor CLI or app is logged in, or run `/login cursor` again. Check `/cursor.doctor` to verify your `tokenSource`. Tokens from CLI/IDE are re-resolved when near expiry; idle stream retries also force-refresh credentials.
 - **Empty / hung stream:** Cursor may have updated wire headers; verify network connectivity or bump `PI_CURSOR_CLIENT_VERSION`. `/cursor.doctor` prints the active `clientVersion`.
 - **Wire-protocol drift:** Cursor can change `agent.v1` at any time. Unrecognized server messages and unknown protobuf fields are no longer skipped silently — they are counted, written to the lifecycle log as `wire_drift`, appended to the failing turn's error message, and listed by `/cursor.doctor` under `wireDrift`. `wireDriftStranding=yes` means an unanswered message could have parked the turn, which is the difference between "our schema is a bit behind" and "this is why it hung". Run `CURSOR_ACCESS_TOKEN=... yarn smoke:wire` to check the handshake and schema against the live endpoint without starting a chat turn, then see [`proto/README.md`](proto/README.md) to resync the schema.
