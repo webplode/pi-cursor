@@ -187,9 +187,31 @@ describe("native Cursor exec steering", () => {
     expect((control.message.value as ExecClientThrow).id).toBe(12);
   });
 
-  it("handles planning, execution, reflection, VM setup, and truncated tool call execs with success results", () => {
+  it("answers the tool-search namespace lookup with a throw, so the declared Pi tools stay visible", () => {
+    const frames: Uint8Array[] = [];
+    const handled = serverMessageInternals.handleExecMessageInner(
+      {
+        id: 13,
+        execId: "exec-13",
+        message: { case: "startGrindPlanningArgs", value: {} },
+      } as never,
+      [],
+      (frame: Uint8Array) => frames.push(frame),
+      () => {
+        throw new Error("should not execute");
+      },
+    );
+    expect(handled).toBe(true);
+    expect(frames).toHaveLength(1);
+    const answer = fromBinary(AgentClientMessageSchema, frames[0]!.subarray(5));
+    expect(answer.message.case).toBe("execClientControlMessage");
+    const control = answer.message.value as ExecClientControlMessage;
+    expect(control.message.case).toBe("throw");
+    expect((control.message.value as ExecClientThrow).id).toBe(13);
+  });
+
+  it("handles execution, reflection, VM setup, and truncated tool call execs with success results", () => {
     const cases = [
-      ["startGrindPlanningArgs", "startGrindPlanningResult"],
       ["startGrindExecutionArgs", "startGrindExecutionResult"],
       ["reflectArgs", "reflectResult"],
       ["setupVmEnvironmentArgs", "setupVmEnvironmentResult"],

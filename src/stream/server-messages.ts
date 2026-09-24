@@ -41,8 +41,6 @@ import {
   SetupVmEnvironmentSuccessSchema,
   StartGrindExecutionResultSchema,
   StartGrindExecutionSuccessSchema,
-  StartGrindPlanningResultSchema,
-  StartGrindPlanningSuccessSchema,
   TruncatedToolCallResultSchema,
   TruncatedToolCallSuccessSchema,
   type AgentServerMessage,
@@ -617,18 +615,12 @@ function handleExecMessageInner(
     );
     return true;
   }
+  // Cursor now sends this exec (field 36) from its server-side tool search, to look up
+  // an MCP namespace; its `explanation` carries the namespace, e.g. "pi". An empty
+  // success tells the server the namespace has no tools, so the model never finds
+  // Pi's tools. A throw lets the server fall back to the tools this run declared.
   if (execCase === "startGrindPlanningArgs") {
-    sendExecResult(
-      execMsg,
-      "startGrindPlanningResult",
-      create(StartGrindPlanningResultSchema, {
-        result: {
-          case: "success",
-          value: create(StartGrindPlanningSuccessSchema, {}),
-        },
-      }),
-      sendFrame,
-    );
+    sendExecThrow(execMsg, "Not available through the Pi Cursor provider.", sendFrame);
     return true;
   }
 
